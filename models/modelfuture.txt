@@ -1,0 +1,4 @@
+we need 2 many to many models
+
+At least TWO many to many relationship between domain objects, or between users, or between users and domain objects 
+- create a schema that can map several records in different tables or collections.

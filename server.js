@@ -4,8 +4,32 @@ const port = 5000;
 
 const cors = require('cors');
 app.use(cors());
+app.use(express.json());
 
-const axios = require('axios');
+const mongoose = require('mongoose');
+const mongodb_URI = 'mongodb://0.0.0.0:27017/'
+mongoose.connect(mongodb_URI, {
+    dbName: 'cs5610_db',
+}).then(() => console.log("Connected to MongoDB")).catch(error => console.log(error));
+
+const session = require("express-session");
+app.use(
+  session({
+    secret: "session_secret_333",
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 14 // 14 days
+    },
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+const passport = require("passport");
+app.use(passport.initialize());
+app.use(passport.session());
+const {setUpLocalPassport, setUpPassportSerializers} = require("./config/passport-config")
+setUpLocalPassport(passport);
+setUpPassportSerializers(passport);
 
 app.get('/', (req, res) => {
   res.send('Hello, world!');
@@ -15,30 +39,20 @@ app.get('/example', (req, res) => {
     res.json({title: 'Super Platformer',});
 });
 
-app.get('/get-games-api', async (req, res) => {
-  try {
-    const response = await axios.get('https://www.freetogame.com/api/games');
-    res.json(response.data);
-    /* this returns as a list of dictionaries. Example entry is:
-    {
-      "id": 582,
-      "title": "Tarisland",
-      "thumbnail": "https://www.freetogame.com/g/582/thumbnail.jpg",
-      "short_description": "A cross-platform MMORPG developed by Level Infinite and Published by Tencent.",
-      "game_url": "https://www.freetogame.com/open/tarisland",
-      "genre": "MMORPG",
-      "platform": "PC (Windows)",
-      "publisher": "Tencent",
-      "developer": "Level Infinite",
-      "release_date": "2024-06-22",
-      "freetogame_profile_url": "https://www.freetogame.com/tarisland"
-    } */
-  } catch (error) {
-    console.error('Error fetching games:', error);
-    res.status(500).json({ message: 'Error fetching games' });
-  }
+app.get('/session', (req, res) => {
+  console.log(req.session)
+  res.json(req.session);
 });
 
-app.listen(port, () => {
+app.use('/games-api', require("./routes/apiRoutes"));
+app.use('/', require("./routes/authRoutes"));
+app.use('/user', require("./routes/userRoutes"));
+app.use('/profile', require("./routes/profileRoutes"));
+app.use('/review', require("./routes/reviewRoutes"));
+app.use('/comment', require("./routes/commentRoutes"));
+
+const server = app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+module.exports = server

@@ -1,6 +1,7 @@
 const { ensureAuth } = require('./middleware');
 const Comment = require('../models/Comment');
 const Review = require('../models/Review');
+const User = require('../models/User');
 
 const router = require('express').Router();
 // prefix to all these routes is /comment
@@ -17,7 +18,7 @@ router.post('/add/:reviewId', ensureAuth(true), async (req, res) => {
 
         const newComment = await Comment.create({
             reviewId: reviewId,
-            commenterId: req.user._id,
+            commenterId: req.user,
             text: text,
         });
 
@@ -40,7 +41,7 @@ router.delete('/delete/:commentId', ensureAuth(true), async (req, res) => {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        const user = req.user;
+        const user = await User.findById(req.user);
 
         if (user.role !== "admin" && user._id.toString() !== comment.commenterId.toString()) {
             return res.status(403).json({ message: 'Unauthorized to delete this comment' });
@@ -61,7 +62,7 @@ router.delete('/delete/:commentId', ensureAuth(true), async (req, res) => {
     }
 });
 
-router.put('/edit/:commentId', ensureAuth(true), async (req, res) => {
+router.patch('/edit/:commentId', ensureAuth(true), async (req, res) => {
     try {
         const { commentId } = req.params;
         const { text } = req.body;
@@ -75,7 +76,7 @@ router.put('/edit/:commentId', ensureAuth(true), async (req, res) => {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        const user = req.user;
+        const user = await User.findById(req.user);
 
         if (user.role !== "admin" && user._id.toString() !== comment.commenterId.toString()) {
             return res.status(403).json({ message: 'Unauthorized to edit this comment' });

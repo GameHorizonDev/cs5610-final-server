@@ -5,11 +5,12 @@ const router = require('express').Router();
 // prefix to all these routes is /profile
 
 const getUserWithPopulatedFields = async (userId) => {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate('reviews').populate('comments');
     if (!user) {
         throw new Error('User not found');
     }
-    return await user.populate('reviews').populate('comments');
+    
+    return user
 };
 
 const handleGetUser = async (req, res, userId) => {
@@ -23,7 +24,7 @@ const handleGetUser = async (req, res, userId) => {
 };
 
 router.get('/', ensureAuth(true), (req, res) => {
-    handleGetUser(req, res, req.user._id);
+    handleGetUser(req, res, req.user);
 });
 
 router.get('/:profileId', ensureAuth(true), (req, res) => {

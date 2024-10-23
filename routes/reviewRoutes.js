@@ -1,5 +1,6 @@
 const { ensureAuth } = require('./middleware');
 const Review = require('../models/Review');
+const User = require('../models/User');
 
 const router = require('express').Router();
 // prefix to all these routes is /review
@@ -10,7 +11,7 @@ router.post('/add', ensureAuth(true), async (req, res) => {
 
         const newReview = await Review.create({
             gameId: gameId,
-            reviewerId: req.user._id,
+            reviewerId: req.user,
             rating: rating,
             text: text,
         });
@@ -26,15 +27,13 @@ router.get('/view/:revId', async (req, res) => {
     try {
         const { revId } = req.params;
 
-        const review = await Review.findById(revId);
+        const review = await Review.findById(revId).populate('reviewerId').populate('comments');
 
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
 
-        const populatedReview = await review.populate('reviewerId').populate('comments');
-
-        res.status(200).json(populatedReview);
+        res.status(200).json(review);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to retrieve review', error: error.message });
@@ -50,7 +49,7 @@ router.delete('/delete/:revId', ensureAuth(true), async (req, res) => {
             return res.status(404).json({ message: 'Review not found' });
         }
 
-        const user = req.user;
+        const user = await User.findById(req.user);
 
         if (user.role !== "admin" && user._id.toString() !== review.reviewerId.toString()) {
             return res.status(403).json({ message: 'Unauthorized to delete this review' });
@@ -65,7 +64,7 @@ router.delete('/delete/:revId', ensureAuth(true), async (req, res) => {
     }
 });
 
-router.put('/edit/:revId', ensureAuth(true), async (req, res) => {
+router.patch('/edit/:revId', ensureAuth(true), async (req, res) => {
     try {
         const { revId } = req.params;
         const { rating, text } = req.body;
@@ -79,7 +78,7 @@ router.put('/edit/:revId', ensureAuth(true), async (req, res) => {
             return res.status(404).json({ message: 'Review not found' });
         }
 
-        const user = req.user;
+        const user = await User.findById(req.user);
 
         if (user.role !== "admin" && user._id.toString() !== review.reviewerId.toString()) {
             return res.status(403).json({ message: 'Unauthorized to edit this review' });

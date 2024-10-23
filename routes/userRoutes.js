@@ -4,17 +4,15 @@ const User = require('../models/User');
 const router = require('express').Router();
 // prefix to all these routes is /user
 
-router.put('/update-user', ensureAuth(true), async (req, res) => {
+router.patch('/update-user', ensureAuth(true), async (req, res) => {
     const { username, email, role, password } = req.body;
   
     if (!username && !email && !role && !password) {
         return res.status(400).json({ message: "Must provide a field to change" });
     }
   
-    try {
-        const userId = req.user._id;
-    
-        const user = await User.findById(userId);
+    try {    
+        const user = await User.findById(req.user);
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }

@@ -50,6 +50,7 @@ app.use('/user', require("./routes/userRoutes"));
 app.use('/profile', require("./routes/profileRoutes"));
 app.use('/review', require("./routes/reviewRoutes"));
 app.use('/comment', require("./routes/commentRoutes"));
+app.use('/game', require("./routes/gameRoutes"));
 
 const server = app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

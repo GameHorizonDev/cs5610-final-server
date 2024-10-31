@@ -1,6 +1,7 @@
 const User = require('./models/User');
 const Review = require('./models/Review');
 const Comment = require('./models/Comment');
+const Game = require("./models/Game");
 
 const mongoose = require("mongoose");
 const mongodb_URI = 'mongodb://0.0.0.0:27017/'
@@ -91,9 +92,44 @@ const seedComments = async () => {
   console.log('Created comments');
 };
 
+const seedFavoritesBookmarks = async () => {
+  await Game.deleteMany({});
+  for (let i = 0; i < 3; i++) {
+    if (userObjs[i].role === "admin") continue;
+    const user = await User.findOne({ email: userObjs[i].email });
+    
+    for (let revId = 0; revId < reviewIds.length; revId += 2) {
+      const review = await Review.findOne({_id : reviewIds[revId]});
+      const gameId = review.gameId;
+      
+      if (!user.favoriteGames.includes(gameId)) {
+        let game = await Game.findOne({ gameId : gameId})
+        if (!game) {
+          game = await Game.create({
+            gameId: gameId,
+          });
+        }
+        game.favoritedBy.push(user._id);
+        await game.save();
+        user.favoriteGames.push(game._id);
+      }
+
+      if (!user.bookmarkedReviews.includes(review._id)) {
+        review.bookmarkedBy.push(user._id);
+        user.bookmarkedReviews.push(review._id);
+        await review.save();
+      }
+    }
+    await user.save();
+  }
+
+  console.log('Created favorites and bookmarks');
+};
+
 seedUsers()
 .then(() => { return seedReviews() })
 .then(() => { return seedComments() })
+.then(() => { return seedFavoritesBookmarks() })
 .then(() => {
   console.log("closing")
   db.close()

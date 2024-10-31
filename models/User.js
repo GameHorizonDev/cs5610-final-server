@@ -8,7 +8,9 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true },
   role: { type: String, enum: ['critic', 'audience', 'admin'], default: 'audience' },
   reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
-  comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }]
+  comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+  favoriteGames: [{ type: Schema.Types.ObjectId, ref: 'Game' }],
+  bookmarkedReviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }]
 }, { timestamps: true });
 
 UserSchema.plugin(passportLocalMongoose, { usernameField: "email" });

@@ -57,6 +57,12 @@ router.delete('/delete/:revId', ensureAuth(true), async (req, res) => {
 
         await review.remove();
 
+        // delete all review bookmarks related to this review
+        await User.updateMany(
+            { bookmarkedReviews: revId },
+            { $pull: { bookmarkedReviews: revId } }
+        );
+
         res.status(200).json({ message: 'Review deleted successfully' });
     } catch (error) {
         console.error(error);
@@ -95,5 +101,70 @@ router.patch('/edit/:revId', ensureAuth(true), async (req, res) => {
         res.status(500).json({ message: 'Failed to update review', error: error.message });
     }
 });
+
+router.post('/bookmark/:revId', ensureAuth(true), async (req, res) => {
+    try {
+        const { revId } = req.params;
+
+        const user = await User.findById(req.user);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const review = await Review.findById(revId);
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        if (user.bookmarkedReviews.includes(revId)) {
+            return res.status(400).json({ message: 'Review already bookmarked' });
+        }
+
+        review.bookmarkedBy.push(user._id);
+        await review.save();
+        user.bookmarkedReviews.push(revId);
+        await user.save();
+
+
+        res.status(200).json({ message: 'Review bookmarked successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to bookmark review', error: error.message });
+    }
+});
+
+router.post('/unbookmark/:revId', ensureAuth(true), async (req, res) => {
+    try {
+        const { revId } = req.params;
+
+        const user = await User.findById(req.user);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const review = await Review.findById(revId);
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        if (!user.bookmarkedReviews.includes(revId)) {
+            return res.status(400).json({ message: 'Review not bookmarked' });
+        }
+
+        review.bookmarkedBy.pull(user._id);
+        await review.save();
+        user.bookmarkedReviews.pull(revId);
+        await user.save();
+
+        res.status(200).json({ message: 'Review unbookmarked successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to unbookmark review', error: error.message });
+    }
+});
+
+
 
 module.exports = router;

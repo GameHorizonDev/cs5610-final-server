@@ -2,12 +2,28 @@ const router = require('express').Router();
 // prefix to all these routes is /games-api
 
 const axios = require('axios');
+let API_GAMES = null;
+
+const fetchGames = async () => {
+  try {
+    const api_response = await axios.get('https://www.freetogame.com/api/games');
+    API_GAMES = api_response.data;
+  } catch {
+    console.log("Error trying to set initial api games -- possibly rate limited.");
+  }
+};
+
+fetchGames();
 
 
 router.get('/', async (req, res) => {
+    if (API_GAMES) {
+      return res.json(API_GAMES);
+    }
     try {
       const response = await axios.get('https://www.freetogame.com/api/games');
-      res.json(response.data);
+      API_GAMES = response.data;
+      res.json(API_GAMES);
       /* this returns as a list of dictionaries. Example entry is:
       {
         "id": 582,
@@ -30,6 +46,16 @@ router.get('/', async (req, res) => {
   
 router.get("/byId/:gameId", async (req, res) =>  {
     const { gameId } = req.params;
+    
+    if (API_GAMES) {
+      const game = API_GAMES.find(g => g.id === parseInt(gameId));
+      if (game) {
+        return res.json(game);
+      } else {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+    }
+
     try {
       const response = await axios.get(`https://www.freetogame.com/api/games/game?id=${gameId}`);
       res.json(response.data);

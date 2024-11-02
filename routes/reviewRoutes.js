@@ -165,6 +165,25 @@ router.post('/unbookmark/:revId', ensureAuth(true), async (req, res) => {
     }
 });
 
+router.get('/all/by-game-id/:gameId', async (req, res) => {
+    try {
+        const gameId = parseInt(req.params.gameId);
+        if (isNaN(gameId)) {
+            return res.status(400).json({ error: 'Invalid game ID' });
+        }
+
+        const reviews = await Review.find({ gameId: gameId })
+            .populate('reviewerId')
+            .populate('comments')
+            .populate('bookmarkedBy');
+
+        res.status(200).json(reviews);
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 
 module.exports = router;

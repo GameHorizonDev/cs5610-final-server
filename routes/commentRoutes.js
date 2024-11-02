@@ -93,4 +93,19 @@ router.patch('/edit/:commentId', ensureAuth(true), async (req, res) => {
     }
 });
 
+router.get('/all/by-review-id/:revId', async (req, res) => {
+    try {
+        const revId = req.params.revId;
+
+        const comments = await Comment.find({ reviewId: revId })
+            .populate('reviewId')
+            .populate('commenterId');
+
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 module.exports = router;

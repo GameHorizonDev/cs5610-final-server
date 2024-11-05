@@ -42,5 +42,13 @@ router.patch('/update-user', ensureAuth(true), async (req, res) => {
         return res.status(500).json({ message: "An error occurred while updating the user.", error: error.message });
     }
 });
+
+router.get("/getCurrId", (req, res) => {
+    if (req.user) {
+        res.send(req.user);
+    } else {
+        res.send("");
+    }
+});
   
 module.exports = router

@@ -46,7 +46,7 @@ router.post('/favorite/:gameId', ensureAuth(true), async (req, res) => {
 
         game.favoritedBy.push(userId);
         await game.save();
-        user.favoritedGames.push(game._id);
+        user.favoriteGames.push(game._id);
         await user.save();
 
         res.status(200).json({ message: 'Game favorited successfully' });
@@ -79,7 +79,7 @@ router.post('/unfavorite/:gameId', ensureAuth(true), async (req, res) => {
 
         game.favoritedBy.pull(userId);
         await game.save();
-        user.favoritedGames.pull(game._id);
+        user.favoriteGames.pull(game._id);
         await user.save();
 
         res.status(200).json({ message: 'Game unfavorited successfully' });

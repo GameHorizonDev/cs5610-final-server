@@ -5,7 +5,7 @@ const router = require('express').Router();
 // prefix to all these routes is /profile
 
 const getUserWithPopulatedFields = async (userId) => {
-    const user = await User.findById(userId).populate('reviews').populate('comments');
+    const user = await User.findById(userId).populate('reviews').populate('comments').populate("favoriteGames").populate("bookmarkedReviews");
     if (!user) {
         throw new Error('User not found');
     }

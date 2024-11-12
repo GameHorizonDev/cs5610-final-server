@@ -109,9 +109,11 @@ const seedFavoritesBookmarks = async () => {
             gameId: gameId,
           });
         }
-        game.favoritedBy.push(user._id);
-        await game.save();
-        user.favoriteGames.push(game._id);
+        if (!user.favoriteGames.includes(game._id)) {
+          game.favoritedBy.push(user._id);
+          await game.save();
+          user.favoriteGames.push(game._id);
+        }
       }
 
       if (!user.bookmarkedReviews.includes(review._id)) {

@@ -184,6 +184,33 @@ router.get('/all/by-game-id/:gameId', async (req, res) => {
     }
 });
 
+router.get('/get-all/:amount', async (req, res) => {
+    try {
+        const amount = parseInt(req.params.amount);
+        // -1 means no limit
+        if (isNaN(amount) || (amount <= 0 && amount != -1)) {
+            return res.status(400).json({ error: 'Invalid amount specified' });
+        }
 
+        let reviews;
+        if (amount === -1) {
+            reviews = await Review.find()
+                .populate('reviewerId')
+                .populate('comments')
+                .populate('bookmarkedBy');
+        } else {
+            reviews = await Review.find()
+                .populate('reviewerId')
+                .populate('comments')
+                .populate('bookmarkedBy')
+                .limit(amount);
+        }
+
+        res.status(200).json(reviews);
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 module.exports = router;

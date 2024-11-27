@@ -22,17 +22,26 @@ router.patch('/update-user', ensureAuth(true), async (req, res) => {
             if (otherUser) {
                 return res.status(500).json({ message: "Email already exists." });
             }
+            user.email = email;
         }
         if (username) user.username = username;
         if (role) user.role = role;
     
         if (password) {
-            user.setPassword(password, async (err) => {
-            if (err) {
-                return res.status(500).json({ message: "Error setting password.", error: err.message });
-            }
+            return user.setPassword(password, async (err) => {
+                if (err) {
+                    return res.status(500).json({ message: "Error setting password.", error: err.message });
+                }
+        
+                try {
+                    await user.save();
+                    return res.status(200).json({ message: "User updated successfully", user });
+                } catch (saveError) {
+                    console.error(saveError);
+                    return res.status(500).json({ message: "Error saving user after updating password.", error: saveError.message });
+                }
             });
-        } 
+        }
 
         await user.save();
         return res.status(200).json({ message: "User updated successfully", user });

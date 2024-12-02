@@ -172,12 +172,31 @@ router.get('/all/by-game-id/:gameId', async (req, res) => {
             return res.status(400).json({ error: 'Invalid game ID' });
         }
 
-        const reviews = await Review.find({ gameId: gameId })
+        let amount;
+        if (req.query.amount) {
+            amount = parseInt(req.query.amount);
+            if (isNaN(amount) || amount < 0) {
+                res.status(500).json({ error: "Invalid amount passed." });
+            }
+        }
+
+        if (!amount) {
+            const reviews = await Review.find({ gameId: gameId })
             .populate('reviewerId')
             .populate('comments')
             .populate('bookmarkedBy');
-
-        res.status(200).json(reviews);
+            res.status(200).json(reviews);
+            return;
+        } else {
+            const reviews = await Review.find({ gameId: gameId })
+            .populate('reviewerId')
+            .populate('comments')
+            .populate('bookmarkedBy')
+            .limit(amount);
+            res.status(200).json(reviews);
+            return;
+        }
+        
     } catch (error) {
         console.error('Error fetching reviews:', error);
         res.status(500).json({ error: 'Server error' });

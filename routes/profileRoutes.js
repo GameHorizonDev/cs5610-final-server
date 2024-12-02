@@ -23,11 +23,11 @@ const handleGetUser = async (req, res, userId) => {
     }
 };
 
-router.get('/', ensureAuth(true), (req, res) => {
+router.get('/', (req, res) => {
     handleGetUser(req, res, req.user);
 });
 
-router.get('/:profileId', ensureAuth(true), (req, res) => {
+router.get('/:profileId', (req, res) => {
     handleGetUser(req, res, req.params.profileId);
 });
 

@@ -55,7 +55,7 @@ router.delete('/delete/:revId', ensureAuth(true), async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to delete this review' });
         } 
 
-        await review.remove();
+        await Review.findByIdAndDelete(revId);
 
         // delete all review bookmarks related to this review
         await User.updateMany(

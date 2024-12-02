@@ -53,7 +53,7 @@ router.delete('/delete/:commentId', ensureAuth(true), async (req, res) => {
             await review.save();
         }
 
-        await comment.remove();
+        await Comment.findByIdAndDelete(commentId);
 
         res.status(200).json({ message: 'Comment deleted successfully' });
     } catch (error) {

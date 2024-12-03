@@ -22,6 +22,12 @@ router.post('/add/:reviewId', ensureAuth(true), async (req, res) => {
             text: text,
         });
 
+        await User.findByIdAndUpdate(
+            req.user,
+            { $push: { comments: newComment._id } },
+            { new: true }
+        );
+
         review.comments.push(newComment._id);
         await review.save();
 
@@ -53,6 +59,10 @@ router.delete('/delete/:commentId', ensureAuth(true), async (req, res) => {
             await review.save();
         }
 
+        await User.findByIdAndUpdate(
+            comment.commenterId,
+            { $pull: { comments: commentId } }
+        );
         await Comment.findByIdAndDelete(commentId);
 
         res.status(200).json({ message: 'Comment deleted successfully' });

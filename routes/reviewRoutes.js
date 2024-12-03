@@ -16,6 +16,12 @@ router.post('/add', ensureAuth(true), async (req, res) => {
             text: text,
         });
 
+        await User.findByIdAndUpdate(
+            req.user,
+            { $push: { reviews: newReview._id } },
+            { new: true }
+        );
+
         res.status(201).json(newReview);
     } catch (error) {
         console.error(error);
@@ -55,6 +61,10 @@ router.delete('/delete/:revId', ensureAuth(true), async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to delete this review' });
         } 
 
+        await User.findByIdAndUpdate(
+            review.reviewerId,
+            { $pull: { reviews: revId } }
+        );
         await Review.findByIdAndDelete(revId);
 
         // delete all review bookmarks related to this review

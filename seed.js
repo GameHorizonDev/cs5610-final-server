@@ -57,6 +57,7 @@ const seedReviews = async () => {
       text: "overwatch 2 review",
     });
     reviewIds.push(review1._id);
+    user.reviews.push(review1._id);
 
     const review2 = await Review.create({
       gameId: 523,
@@ -65,6 +66,8 @@ const seedReviews = async () => {
       text: "fall guys review",
     });
     reviewIds.push(review2._id);
+    user.reviews.push(review2._id);
+    await user.save();
   }
 
   console.log('Created reviews');
@@ -85,6 +88,8 @@ const seedComments = async () => {
 
       const review = await Review.findOne({_id : reviewIds[revId]});
       review.comments.push(comment);
+      user.comments.push(comment._id);
+      await user.save();
       await review.save();
     }
   }

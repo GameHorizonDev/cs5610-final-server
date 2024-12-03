@@ -1,6 +1,6 @@
 const { ensureAuth } = require('./middleware');
 const passport = require("passport");
-const User = require("../models/User");
+const { Audience, Critic, Admin } = require("../models/User");
 
 const router = require('express').Router();
 
@@ -41,15 +41,40 @@ router.post('/register', ensureAuth(false), (req, res) => {
   
     const newUser = { username: username, email: email, role: role };
   
-    User.register(newUser, password, (error, user) => {
-      if (user) {
-        passport.authenticate('local')(req, res, () => {
-          return res.status(201).json({ message: 'Account created successfully!', user });
-        });
-      } else {
-        return res.status(400).json({ message: `Failed to create user account because: ${error.message}.` });
-      }
-    });
+    if (role === 'admin') {
+      Admin.register(newUser, password, (error, user) => {
+        if (user) {
+          passport.authenticate('local')(req, res, () => {
+            return res.status(201).json({ message: 'Account created successfully!', user });
+          });
+        } else {
+          return res.status(400).json({ message: `Failed to create user account because: ${error.message}.` });
+        }
+      });
+    } else if (role === 'audience') {
+      Audience.register(newUser, password, (error, user) => {
+        if (user) {
+          passport.authenticate('local')(req, res, () => {
+            return res.status(201).json({ message: 'Account created successfully!', user });
+          });
+        } else {
+          return res.status(400).json({ message: `Failed to create user account because: ${error.message}.` });
+        }
+      });
+    } else if (role === 'critic') {
+      Critic.register(newUser, password, (error, user) => {
+        if (user) {
+          passport.authenticate('local')(req, res, () => {
+            return res.status(201).json({ message: 'Account created successfully!', user });
+          });
+        } else {
+          return res.status(400).json({ message: `Failed to create user account because: ${error.message}.` });
+        }
+      });
+    } else {
+      return res.status(400).json({ message: "Invalid role given for creation." });
+    }
+    
 });  
   
 module.exports = router;

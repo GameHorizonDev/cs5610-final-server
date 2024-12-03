@@ -1,6 +1,6 @@
 const { ensureAuth } = require('./middleware');
 const Game = require('../models/Game');
-const User = require('../models/User');
+const { User } = require('../models/User');
 
 const router = require('express').Router();
 // prefix to all these routes is /game

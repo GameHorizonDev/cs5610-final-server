@@ -1,6 +1,6 @@
 const { ensureAuth } = require('./middleware');
 const Review = require('../models/Review');
-const User = require('../models/User');
+const { User } = require('../models/User');
 
 const router = require('express').Router();
 // prefix to all these routes is /review

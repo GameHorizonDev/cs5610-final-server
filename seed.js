@@ -1,4 +1,4 @@
-const User = require('./models/User');
+const { User, Audience, Critic, Admin } = require('./models/User');
 const Review = require('./models/Review');
 const Comment = require('./models/Comment');
 const Game = require("./models/Game");
@@ -24,16 +24,41 @@ const seedUsers = async () => {
         role: roles[i],
       };
       userObjs.push(tempUser);
-      const promise = new Promise((resolve, reject) => {
-        User.register(tempUser, roles[i], (err, user) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(user);
-          }
+      if (roles[i] == 'critic') {
+        const promise = new Promise((resolve, reject) => {
+          Critic.register(tempUser, roles[i], (err, user) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(user);
+            }
+          });
         });
-      });
-      promises.push(promise);
+        promises.push(promise);
+      } else if (roles[i] == 'audience') {
+        const promise = new Promise((resolve, reject) => {
+          Audience.register(tempUser, roles[i], (err, user) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(user);
+            }
+          });
+        });
+        promises.push(promise);
+      } else if (roles[i] == 'admin') {
+        const promise = new Promise((resolve, reject) => {
+          Admin.register(tempUser, roles[i], (err, user) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(user);
+            }
+          });
+        });
+        promises.push(promise);
+      }
+      
     }
     await Promise.all(promises);
     console.log("Users added");

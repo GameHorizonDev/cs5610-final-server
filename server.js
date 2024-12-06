@@ -1,9 +1,9 @@
 const express = require('express');
 const app = express();
-const port = 5000;
+const port = 5001;
 
 const cors = require('cors');
-const reactUrl = process.env.REACT_URL || 'http://localhost:3000';
+const reactUrl = process.env.REACT_URL || 'http://localhost:3002';
 const corsOptions = {
   origin: reactUrl,
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

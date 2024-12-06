@@ -1,5 +1,8 @@
-const { ensureAuth } = require('./middleware');
+const { ensureAuth, ensureAdmin } = require('./middleware');
 const { User } = require('../models/User');
+const Comment = require('../models/Comment');
+const Review = require('../models/Review');
+const Game = require('../models/Game');
 
 const router = require('express').Router();
 // prefix to all these routes is /user
@@ -59,5 +62,62 @@ router.get("/getCurrId", (req, res) => {
         res.send("");
     }
 });
+
+
+// admin only routes
+router.delete("/delete/:userId", ensureAdmin, async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        const deletedUser = await User.findByIdAndDelete(userId);
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // delete related game info
+        await Game.updateMany(
+            { favoritedBy: userId },
+            { $pull: { favoritedBy: userId } }
+        );
+
+        // delete related review info
+        const deletedReviews = await Review.find({ reviewerId: userId });
+        const deletedReviewIds = deletedReviews.map(review => review._id);
+        await Review.deleteMany({ reviewerId: userId });
+        await User.updateMany(
+            { bookmarkedReviews: { $in: deletedReviewIds } },
+            { $pull: { bookmarkedReviews: { $in: deletedReviewIds } } }
+        );
+        await Review.updateMany(
+            { bookmarkedBy: userId },
+            { $pull: { bookmarkedBy: userId } }
+        );
+
+        // delete all related comment info
+        const deletedComments = await Comment.find({ commenterId: userId });
+        const deletedCommentIds = deletedComments.map(comment => comment._id);
+        await Comment.deleteMany({ commenterId: userId });
+        await Review.updateMany(
+            { comments: { $in: deletedCommentIds } },
+            { $pull: { comments: { $in: deletedCommentIds } } }
+        );
+
+        res.status(200).json({ message: "User deleted successfully"});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error deleting user", error: error.message });
+    }
+});
+
+router.get("/all", ensureAdmin, async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving users", error: error.message });
+    }
+});
+
+
   
 module.exports = router

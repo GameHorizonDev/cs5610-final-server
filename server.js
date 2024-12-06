@@ -3,8 +3,9 @@ const app = express();
 const port = 5000;
 
 const cors = require('cors');
+const reactUrl = process.env.REACT_URL || 'http://localhost:3000';
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: reactUrl,
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
 };
@@ -12,7 +13,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 const mongoose = require('mongoose');
-const mongodb_URI = 'mongodb://0.0.0.0:27017/'
+const mongodb_URI = process.env.MONGO_URL || 'mongodb://0.0.0.0:27017/'
 mongoose.connect(mongodb_URI, {
     dbName: 'cs5610_db',
 }).then(() => console.log("Connected to MongoDB")).catch(error => console.log(error));
@@ -58,7 +59,7 @@ app.use('/comment', require("./routes/commentRoutes"));
 app.use('/game', require("./routes/gameRoutes"));
 
 const server = app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on port: ${port}`);
 });
 
 module.exports = server

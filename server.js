@@ -19,16 +19,21 @@ mongoose.connect(mongodb_URI, {
 }).then(() => console.log("Connected to MongoDB")).catch(error => console.log(error));
 
 const session = require("express-session");
-app.use(
-  session({
-    secret: "session_secret_333",
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 14 // 14 days
-    },
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+const sessionOptions = {
+  secret: "session_secret_333",
+  resave: false,
+  saveUninitialized: false,
+};
+const nodeEnv = process.env.NODE_ENV || "dev";
+if (nodeEnv !== "dev") {
+  sessionOptions.proxy = true;
+  sessionOptions.cookie = {
+    sameSite: "none",
+    secure: true,
+    maxAge: 1000 * 60 * 60 * 24 * 14,
+  };
+}
+app.use(session(sessionOptions));  
 
 const passport = require("passport");
 app.use(passport.initialize());
